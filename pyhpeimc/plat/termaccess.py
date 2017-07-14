@@ -12,7 +12,7 @@ platform using the RESTful API
 # This section imports required libraries
 import ipaddress
 import json
-
+import re
 import requests
 
 from pyhpeimc.auth import HEADERS
@@ -20,14 +20,14 @@ from pyhpeimc.plat.device import get_dev_details
 
 #pylint: disable=R0913
 
-def get_real_time_locate(host_ipaddress, auth, url):
+def get_real_time_locate(host_address, auth, url):
     """
-    function takes the ipAddress of a specific host and issues a RESTFUL call to get the device and
+    function takes the IP or MAC address of a specific host and issues a RESTFUL call to get the device and
     interface that the target host is currently connected to. Note: Although intended to return a
-    single location, Multiple locations may be returned for a single host due to a partially
+    single location, multiple locations may be returned for a single host due to a partially
     discovered network or misconfigured environment.
 
-    :param host_ipaddress: str value valid IPv4 IP address
+    :param host_address: str value valid IPv4 IP address or MAC-48 MAC address
 
     :param auth: requests auth object #usually auth.creds from auth pyhpeimc.auth.class
 
@@ -63,8 +63,12 @@ def get_real_time_locate(host_ipaddress, auth, url):
     >>> assert len(no_device) == 0
 
     """
-    f_url = url + "/imcrs/res/access/realtimeLocate?type=2&value=" + str(host_ipaddress)  + \
-            "&total=false"
+    if re.match("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", host_address):
+        rtl_type = '1'
+    else:
+        rtl_type = '2'
+    f_url = url + "/imcrs/res/access/realtimeLocate?type=" + rtl_type + "&value=" + str(host_address) + \
+            "&total=false"    
     response = requests.get(f_url, auth=auth, headers=HEADERS)
     try:
         if response.status_code == 200:
