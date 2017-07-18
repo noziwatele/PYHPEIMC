@@ -173,7 +173,10 @@ class IMCInterface:
         self.trunkinterfaces = get_trunk_interfaces(self.auth, self.url, devip=self.ip)
         self.interfaces = self.accessinterfaces + self.trunkinterfaces
         self.pvid = get_interface_vlans(self.ifIndex, self.interfaces)['pvid']
-        self.allowedvlans = get_interface_vlans(self.ifIndex, self.interfaces)['allowedVlans']
+        try:
+            self.allowedvlans = get_interface_vlans(self.ifIndex, self.interfaces)['allowedVlans']
+        except KeyError:
+            self.allowedvlans = {}
 
     def getpvid(self):
         """
@@ -187,7 +190,12 @@ class IMCInterface:
         Function operates on the IMCInterface object and updates the pvid attribute
         :return:
         """
-        self.allowedvlans = get_interface_vlans(self.ifIndex, self.interfaces)['allowedVlans']
+        try:
+            self.allowedvlans = get_interface_vlans(self.ifIndex, self.interfaces)['allowedVlans']
+        except KeyError:
+            self.allowedvlans = {}
+
+    # TODO: add method to set PVID and allowedVlans
 
 
 # TODO refactor deallocateIp method for human consumption
