@@ -108,7 +108,7 @@ class IMCInterface:
         self.mtu = get_interface_details(self.devid, ifIndex,auth, url)['mtu']
         self.speed = get_interface_details(self.devid, ifIndex,auth, url)['ifspeed']
         self.accessinterfaces = get_device_access_interfaces(self.devid,auth, url)
-        self.pvid = get_access_interface_vlan(self.ifIndex, self.accessinterfaces,auth, url)
+        self.pvid = get_interface_vlans(self.ifIndex, self.accessinterfaces, auth, url)
         self.auth = auth
         self.url = url
 

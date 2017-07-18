@@ -170,7 +170,10 @@ class IMCInterface:
         self.mtu = get_interface_details(ifindex, self.auth, self.url, devip= self.ip)['mtu']
         self.speed = get_interface_details(ifindex, self.auth, self.url, devip= self.ip)['ifspeed']
         self.accessinterfaces = get_device_access_interfaces(self.auth, self.url, devip = self.ip)
-        self.pvid = get_access_interface_vlan(self.ifIndex, self.accessinterfaces)
+        self.trunkinterfaces = get_trunk_interfaces(self.auth, self.url, devip=self.ip)
+        self.interfaces = self.accessinterfaces + self.trunkinterfaces
+        self.pvid = get_interface_vlans(self.ifIndex, self.interfaces)['pvid']
+        self.allowedvlans = get_interface_vlans(self.ifIndex, self.interfaces)['allowedVlans']
 
 
 # TODO refactor deallocateIp method for human consumption

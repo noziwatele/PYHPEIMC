@@ -415,7 +415,7 @@ def set_access_interface_pvid(ifindex, pvid, auth, url, devip=None, devid=None):
         return "Error:\n" + str(error) + " set_access_interface_pvid: An Error has occured"
 
 
-def get_access_interface_vlan(ifindex, accessinterfacelist):
+def get_interface_vlans(ifindex, interfacelist):
     """
     Function which takes input of str of ifIndex value for target interface and
     accessinterfacelist ( output of get_device_access_interfaces) to send against IMC REST
@@ -439,14 +439,15 @@ def get_access_interface_vlan(ifindex, accessinterfacelist):
     >>> access_interface_list = get_device_access_interfaces(auth.creds, auth.url,
                                                              devip='10.101.0.221')
 
-    >>> get_access_interface_vlan('4', access_interface_list, auth.creds, auth.url)
+    >>> get_interface_vlans('4', access_interface_list, auth.creds, auth.url)
     '1'
     """
-    for i in accessinterfacelist:
+    result = None
+    for i in interfacelist:
         if i['ifIndex'] == ifindex:
-            return i['pvid']
-        else:
-            return "Not an Access Port"
+            # TODO: fix response from IMC where allowedVlans contains a range of VLAN IDs, convert to full list
+            result = i
+    return result
 
 
 def create_dev_vlan(vlanid, vlan_name, auth, url, devid=None, devip=None):

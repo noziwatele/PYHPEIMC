@@ -188,7 +188,7 @@ def get_access_interface_vlan(ifIndex, accessinterfacelist, auth, url):
 
     >>> access_interface_list = get_device_access_interfaces('10', auth.creds, auth.url)
 
-    >>> get_access_interface_vlan('4', access_interface_list, auth.creds, auth.url)
+    >>> get_interface_vlans('4', access_interface_list, auth.creds, auth.url)
     '1'
     """
     for i in accessinterfacelist:
