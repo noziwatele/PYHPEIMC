@@ -175,6 +175,20 @@ class IMCInterface:
         self.pvid = get_interface_vlans(self.ifIndex, self.interfaces)['pvid']
         self.allowedvlans = get_interface_vlans(self.ifIndex, self.interfaces)['allowedVlans']
 
+    def getpvid(self):
+        """
+        Function operates on the IMCInterface object and updates the pvid attribute
+        :return:
+        """
+        self.pvid = get_interface_vlans(self.ifIndex, self.interfaces)['pvid']
+
+    def getallowedvlans(self):
+        """
+        Function operates on the IMCInterface object and updates the pvid attribute
+        :return:
+        """
+        self.allowedvlans = get_interface_vlans(self.ifIndex, self.interfaces)['allowedVlans']
+
 
 # TODO refactor deallocateIp method for human consumption
 # TODO Add real_time_locate functionality to nextfreeip method to search IP address before offering
