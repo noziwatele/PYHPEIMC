@@ -173,28 +173,25 @@ class IMCInterface:
         self.trunkinterfaces = get_trunk_interfaces(self.auth, self.url, devip=self.ip)
         self.interfaces = self.accessinterfaces + self.trunkinterfaces
         self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
+        self.ifType = self.interfacevlans['ifType']
         self.pvid = self.interfacevlans['pvid']
-        try:
-            self.allowedvlans = self.interfacevlans['allowedVlans']
-        except KeyError:
-            self.allowedvlans = {}
+        self.allowedvlans = self.interfacevlans['allowedVlans']
 
     def getpvid(self):
         """
         Function operates on the IMCInterface object and updates the pvid attribute
         :return:
         """
-        self.pvid = get_interface_vlans(self.ifIndex, self.interfaces)['pvid']
+        self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
+        self.pvid = self.interfacevlans['pvid']
 
     def getallowedvlans(self):
         """
         Function operates on the IMCInterface object and updates the pvid attribute
         :return:
         """
-        try:
-            self.allowedvlans = get_interface_vlans(self.ifIndex, self.interfaces)['allowedVlans']
-        except KeyError:
-            self.allowedvlans = {}
+        self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
+        self.allowedvlans = self.interfacevlans['allowedVlans']
 
     # TODO: add method to set PVID and allowedVlans
 

@@ -446,7 +446,13 @@ def get_interface_vlans(ifindex, interfacelist):
     for i in interfacelist:
         if i['ifIndex'] == ifindex:
             # TODO: fix response from IMC where allowedVlans contains a range of VLAN IDs, convert to full list
-            result = i
+            if 'allowedVlans' in i.keys():
+                i['ifType'] = 'trunk'
+                result = i
+            else:
+                i['allowedVlans'] = ''
+                i['ifType'] = 'access'
+                result = i
     return result
 
 
