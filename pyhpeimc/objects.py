@@ -177,7 +177,20 @@ class IMCInterface:
         self.pvid = self.interfacevlans['pvid']
         self.allowedvlans = self.interfacevlans['allowedVlans']
 
-    # TODO: add method to set PVID and allowedVlans
+    @property
+    def pvid(self):
+        return self._pvid
+
+    @pvid.setter
+    def pvid(self, vlan):
+        if int(vlan) < 1 or int(vlan) > 4096:
+            raise ValueError("VLAN ID must be between 1 and 4096")
+        update_int = set_interface_pvid(self.ifIndex, self.ifType, vlan, self.auth, self.url, self.ip)
+        print('Response: ' + str(update_int))  # + ', current PVID: ' + self.pvid + ', new PVID: ' + vlan)
+        if update_int == 204:
+            self._pvid = vlan
+        else:
+            raise ValueError("Unable to set PVID - check VLAN exists on switch")
 
 
 # TODO refactor deallocateIp method for human consumption
