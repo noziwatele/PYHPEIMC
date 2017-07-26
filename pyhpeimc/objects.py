@@ -177,22 +177,6 @@ class IMCInterface:
         self.pvid = self.interfacevlans['pvid']
         self.allowedvlans = self.interfacevlans['allowedVlans']
 
-    def getpvid(self):
-        """
-        Function operates on the IMCInterface object and updates the pvid attribute
-        :return:
-        """
-        self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
-        self.pvid = self.interfacevlans['pvid']
-
-    def getallowedvlans(self):
-        """
-        Function operates on the IMCInterface object and updates the pvid attribute
-        :return:
-        """
-        self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
-        self.allowedvlans = self.interfacevlans['allowedVlans']
-
     # TODO: add method to set PVID and allowedVlans
 
 
