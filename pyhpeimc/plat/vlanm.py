@@ -448,15 +448,17 @@ def get_interface_vlans(ifindex, interfacelist):
             # TODO: fix response from IMC where allowedVlans contains a range of VLAN IDs, convert to full list
             if 'allowedVlans' in i.keys():
                 i['ifType'] = 'trunk'
+                print('get_interface_vlans returning a trunk interface')
                 result = i
             else:
                 i['allowedVlans'] = ''
                 i['ifType'] = 'access'
+                print('get_interface_vlans returning an access interface')
                 result = i
     return result
 
 
-def set_interface_pvid(ifindex, ifType, pvid, auth, url, devip=None, devid=None):
+def set_interface_pvid(ifindex, ifType, pvid, auth, url, devip=None, devid=None, allowedVlans=None):
     """
     Function takes devip ( ipv4 address ), ifIndex, ifType and pvid (vlanid) of specific interface
     and issues a RESTFUL call to remove the specified VLAN from the target device.
@@ -503,11 +505,18 @@ def set_interface_pvid(ifindex, ifType, pvid, auth, url, devip=None, devid=None)
         set_interface_pvid_url = "/imcrs/vlan/access?devId=" + devid + "&destVlanId=" + pvid \
                                         + "&ifIndex=" + str(ifindex)
         f_url = url + set_interface_pvid_url
+        print('Setting access interface')
         response = requests.put(f_url, auth=auth, headers=HEADERS)
     elif ifType == 'trunk':
         set_interface_pvid_url = "/imcrs/vlan/trunk?devId=" + devid
         f_url = url + set_interface_pvid_url
-        payload = '''{"ifIndex": "''' + str(ifindex) + '''", "pvid": "''' + pvid + '''"}'''
+        # TODO: payload needs to include allowedVlans?
+        if allowedVlans is not None:
+            payload = '''{"ifIndex": "''' + str(ifindex) + '''", "pvid": "''' + pvid + '''", 
+            "allowedVlans": "''' + allowedVlans + '''"}'''
+        else:
+            payload = '''{"ifIndex": "''' + str(ifindex) + '''", "pvid": "''' + pvid + '''"}'''
+        print('Setting trunk interface')
         response = requests.put(f_url, data=payload, auth=auth, headers=HEADERS)
     else:
         raise ValueError('Incorrect ifType: \'%s\'. Must be either \'access\' or \'trunk\'' % ifType)

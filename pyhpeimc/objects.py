@@ -103,8 +103,8 @@ class IMCDev:
         self.assets = get_dev_asset_details(self.ip, auth, url)
         self.serials = [({'name': asset['name'], 'serialNum': asset['serialNum']}) for asset in
                          self.assets]
-        self.runconfig = get_dev_run_config(auth, url, devip = self.ip)
-        self.startconfig = get_dev_start_config(auth, url, devip = self.ip)
+        # self.runconfig = get_dev_run_config(auth, url, devip = self.ip)
+        # self.startconfig = get_dev_start_config(auth, url, devip = self.ip)
         self.ipmacarp = get_ip_mac_arp_list(auth, url, devip = self.ip)
 
     def getvlans(self):
@@ -174,7 +174,7 @@ class IMCInterface:
         self.interfaces = self.accessinterfaces + self.trunkinterfaces
         self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
         self.ifType = self.interfacevlans['ifType']
-        self.pvid = self.interfacevlans['pvid']
+        self._pvid = self.interfacevlans['pvid']
         self.allowedvlans = self.interfacevlans['allowedVlans']
 
     @property
@@ -185,9 +185,11 @@ class IMCInterface:
     def pvid(self, vlan):
         if int(vlan) < 1 or int(vlan) > 4096:
             raise ValueError("VLAN ID must be between 1 and 4096")
-        update_int = set_interface_pvid(self.ifIndex, self.ifType, vlan, self.auth, self.url, self.ip)
+        update_int = set_interface_pvid(self.ifIndex, self.ifType, vlan, self.auth, self.url, self.ip,
+                                        allowedVlans=self.allowedvlans)
         print('Response: ' + str(update_int))  # + ', current PVID: ' + self.pvid + ', new PVID: ' + vlan)
         if update_int == 204:
+            # TODO: this isn't very robust, it doesn't confirm that the PVID has actually been updated
             self._pvid = vlan
         else:
             raise ValueError("Unable to set PVID - check VLAN exists on switch")
