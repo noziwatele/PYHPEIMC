@@ -97,15 +97,15 @@ class IMCDev:
         self.numinterface = len(get_all_interface_details(auth, url, devip=self.ip))
         self.vlans = get_dev_vlans(auth, url, devid=None, devip=self.ip)
         self.accessinterfaces = get_device_access_interfaces(auth, url, devip=self.ip)
-        self.trunkinterfaces = get_trunk_interfaces(auth, url, devip = self.ip)
-        self.alarm = get_dev_alarms(auth, url, devip = self.ip)
-        self.numalarm = len(get_dev_alarms(auth, url, devip= self.ip))
+        self.trunkinterfaces = get_trunk_interfaces(auth, url, devip=self.ip)
+        self.alarm = get_dev_alarms(auth, url, devip=self.ip)
+        self.numalarm = len(get_dev_alarms(auth, url, devip=self.ip))
         self.assets = get_dev_asset_details(self.ip, auth, url)
         self.serials = [({'name': asset['name'], 'serialNum': asset['serialNum']}) for asset in
                          self.assets]
-        # self.runconfig = get_dev_run_config(auth, url, devip = self.ip)
-        # self.startconfig = get_dev_start_config(auth, url, devip = self.ip)
-        self.ipmacarp = get_ip_mac_arp_list(auth, url, devip = self.ip)
+        self.runconfig = get_dev_run_config(auth, url, devip=self.ip) if 'HP 3800' not in self.type else None
+        self.startconfig = get_dev_start_config(auth, url, devip=self.ip) if 'HP 3800' not in self.type else None
+        self.ipmacarp = get_ip_mac_arp_list(auth, url, devip=self.ip)
 
     def getvlans(self):
         """
@@ -200,7 +200,7 @@ class IMCInterface(object):
                 raise ValueError("Error setting PVID - the PVID did not change as required")
         else:
             raise ValueError("Unable to set PVID - check VLAN exists on switch")
-    # TODO: add property and setter for allowedVlans
+    # TODO: add property and setter for allowedVlans - requires allowedVlans to be a proper list
 
 # TODO refactor deallocateIp method for human consumption
 # TODO Add real_time_locate functionality to nextfreeip method to search IP address before offering
