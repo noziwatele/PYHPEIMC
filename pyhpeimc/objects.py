@@ -85,6 +85,7 @@ class IMCDev:
         """
         self.auth = auth
         self.url = url
+        # TODO: needs to throw a useful error when a non-existant switch IP is provided
         self.ip = get_dev_details(ip_address, auth, url)['ip']
         self.description = get_dev_details(ip_address, auth, url)['sysDescription']
         self.location = get_dev_details(ip_address, auth, url)['location']
@@ -158,6 +159,7 @@ class IMCInterface(object):
         self.url = url
         self.ip = get_dev_details(ip_address, self.auth, self.url)['ip']
         self.devid = get_dev_details(ip_address, self.auth, self.url)['id']
+        # TODO: needs to throw a useful error when a non-existant ifIndex is provided
         self.ifIndex = get_interface_details(ifindex, self.auth, self.url, devip=self.ip)['ifIndex']
         self.macaddress = get_interface_details(ifindex, self.auth, self.url, devip=self.ip)[
             'phyAddress']
