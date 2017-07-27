@@ -147,7 +147,7 @@ class IMCDev:
         self.ipmacarp = get_ip_mac_arp_list(self.devid, self.auth, self.url)
 
 
-class IMCInterface:
+class IMCInterface(object):
     """
     Class instantiates an object to gather and manipulate attributes and methods of a single
     interface on a single infrastructure device, such as a switch or router.
@@ -174,12 +174,18 @@ class IMCInterface:
         self.interfaces = self.accessinterfaces + self.trunkinterfaces
         self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
         self.ifType = self.interfacevlans['ifType']
-        self._pvid = self.interfacevlans['pvid']
         self.allowedvlans = self.interfacevlans['allowedVlans']
+
+    def reget_interfaces(self):
+        """This updates the interface and vlan attributes of the object with current values from IMC"""
+        self.accessinterfaces = get_device_access_interfaces(self.auth, self.url, devip=self.ip)
+        self.trunkinterfaces = get_trunk_interfaces(self.auth, self.url, devip=self.ip)
+        self.interfaces = self.accessinterfaces + self.trunkinterfaces
+        self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
 
     @property
     def pvid(self):
-        return self._pvid
+        return self.interfacevlans['pvid']
 
     @pvid.setter
     def pvid(self, vlan):
@@ -187,13 +193,14 @@ class IMCInterface:
             raise ValueError("VLAN ID must be between 1 and 4096")
         update_int = set_interface_pvid(self.ifIndex, self.ifType, vlan, self.auth, self.url, self.ip,
                                         allowedVlans=self.allowedvlans)
-        print('Response: ' + str(update_int))  # + ', current PVID: ' + self.pvid + ', new PVID: ' + vlan)
         if update_int == 204:
-            # TODO: this isn't very robust, it doesn't confirm that the PVID has actually been updated
-            self._pvid = vlan
+            self.reget_interfaces()
+            # check that the PVID actually changed
+            if self.pvid != vlan:
+                raise ValueError("Error setting PVID - the PVID did not change as required")
         else:
             raise ValueError("Unable to set PVID - check VLAN exists on switch")
-
+    # TODO: add property and setter for allowedVlans
 
 # TODO refactor deallocateIp method for human consumption
 # TODO Add real_time_locate functionality to nextfreeip method to search IP address before offering
