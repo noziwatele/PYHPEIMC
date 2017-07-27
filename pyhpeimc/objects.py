@@ -85,6 +85,7 @@ class IMCDev:
         """
         self.auth = auth
         self.url = url
+        # TODO: needs to throw a useful error when a non-existant switch IP is provided
         self.ip = get_dev_details(ip_address, auth, url)['ip']
         self.description = get_dev_details(ip_address, auth, url)['sysDescription']
         self.location = get_dev_details(ip_address, auth, url)['location']
@@ -97,15 +98,15 @@ class IMCDev:
         self.numinterface = len(get_all_interface_details(auth, url, devip=self.ip))
         self.vlans = get_dev_vlans(auth, url, devid=None, devip=self.ip)
         self.accessinterfaces = get_device_access_interfaces(auth, url, devip=self.ip)
-        self.trunkinterfaces = get_trunk_interfaces(auth, url, devip = self.ip)
-        self.alarm = get_dev_alarms(auth, url, devip = self.ip)
-        self.numalarm = len(get_dev_alarms(auth, url, devip= self.ip))
+        self.trunkinterfaces = get_trunk_interfaces(auth, url, devip=self.ip)
+        self.alarm = get_dev_alarms(auth, url, devip=self.ip)
+        self.numalarm = len(get_dev_alarms(auth, url, devip=self.ip))
         self.assets = get_dev_asset_details(self.ip, auth, url)
         self.serials = [({'name': asset['name'], 'serialNum': asset['serialNum']}) for asset in
                          self.assets]
-        self.runconfig = get_dev_run_config(auth, url, devip = self.ip)
-        self.startconfig = get_dev_start_config(auth, url, devip = self.ip)
-        self.ipmacarp = get_ip_mac_arp_list(auth, url, devip = self.ip)
+        self.runconfig = get_dev_run_config(auth, url, devip=self.ip) if 'HP 3800' not in self.type else None
+        self.startconfig = get_dev_start_config(auth, url, devip=self.ip) if 'HP 3800' not in self.type else None
+        self.ipmacarp = get_ip_mac_arp_list(auth, url, devip=self.ip)
 
     def getvlans(self):
         """
@@ -147,7 +148,7 @@ class IMCDev:
         self.ipmacarp = get_ip_mac_arp_list(self.devid, self.auth, self.url)
 
 
-class IMCInterface:
+class IMCInterface(object):
     """
     Class instantiates an object to gather and manipulate attributes and methods of a single
     interface on a single infrastructure device, such as a switch or router.
@@ -158,6 +159,7 @@ class IMCInterface:
         self.url = url
         self.ip = get_dev_details(ip_address, self.auth, self.url)['ip']
         self.devid = get_dev_details(ip_address, self.auth, self.url)['id']
+        # TODO: needs to throw a useful error when a non-existant ifIndex is provided
         self.ifIndex = get_interface_details(ifindex, self.auth, self.url, devip=self.ip)['ifIndex']
         self.macaddress = get_interface_details(ifindex, self.auth, self.url, devip=self.ip)[
             'phyAddress']
@@ -174,11 +176,33 @@ class IMCInterface:
         self.interfaces = self.accessinterfaces + self.trunkinterfaces
         self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
         self.ifType = self.interfacevlans['ifType']
-        self.pvid = self.interfacevlans['pvid']
         self.allowedvlans = self.interfacevlans['allowedVlans']
 
-    # TODO: add method to set PVID and allowedVlans
+    def reget_interfaces(self):
+        """This updates the interface and vlan attributes of the object with current values from IMC"""
+        self.accessinterfaces = get_device_access_interfaces(self.auth, self.url, devip=self.ip)
+        self.trunkinterfaces = get_trunk_interfaces(self.auth, self.url, devip=self.ip)
+        self.interfaces = self.accessinterfaces + self.trunkinterfaces
+        self.interfacevlans = get_interface_vlans(self.ifIndex, self.interfaces)
 
+    @property
+    def pvid(self):
+        return self.interfacevlans['pvid']
+
+    @pvid.setter
+    def pvid(self, vlan):
+        if int(vlan) < 1 or int(vlan) > 4096:
+            raise ValueError("VLAN ID must be between 1 and 4096")
+        update_int = set_interface_pvid(self.ifIndex, self.ifType, vlan, self.auth, self.url, self.ip,
+                                        allowedVlans=self.allowedvlans)
+        if update_int == 204:
+            self.reget_interfaces()
+            # check that the PVID actually changed
+            if self.pvid != vlan:
+                raise ValueError("Error setting PVID - the PVID did not change as required")
+        else:
+            raise ValueError("Unable to set PVID - check VLAN exists on switch")
+    # TODO: add property and setter for allowedVlans - requires allowedVlans to be a proper list
 
 # TODO refactor deallocateIp method for human consumption
 # TODO Add real_time_locate functionality to nextfreeip method to search IP address before offering
